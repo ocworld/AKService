@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'AKService_Example' do
+  pod 'AKService', :path => '../'
+
+  target 'AKService_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
