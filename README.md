@@ -22,7 +22,7 @@ pod 'AKService'
 
 ## Author
 
-ocworld, ocworld@users.noreply.github.com
+Keunhyun Oh, ocworld@users.noreply.github.com
 
 ## License
 

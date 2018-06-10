@@ -2,8 +2,8 @@
 //  ViewController.swift
 //  AKService
 //
-//  Created by ocworld on 06/11/2018.
-//  Copyright (c) 2018 ocworld. All rights reserved.
+//  Created by Keunhyun Oh on 06/11/2018.
+//  Copyright (c) 2018 Keunhyun Oh. All rights reserved.
 //
 
 import UIKit
