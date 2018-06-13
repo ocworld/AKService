@@ -18,14 +18,14 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-AirKorea 미세먼지 요청 라이브러리.
-location과 placemark 기준으로 주변 측정소 미세먼지 정보를 요청할 수 있습니다.
+  AirKorea에서 제공하는 API를 iOS에서 사용하기 위한 라이브러리입니다.
+  미세먼지 요청 기능을 중심으로 제공합니다.
                        DESC
 
   s.homepage         = 'https://github.com/ocworld/AKService'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'ocworld' => 'ocworld@users.noreply.github.com' }
+  s.author           = { 'Keunhyun Oh' => 'ocworld@gmail.com' }
   s.source           = { :git => 'https://github.com/ocworld/AKService.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
