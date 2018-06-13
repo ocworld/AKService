@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// AirKorea로부터 반환받은 미세먼지 측정 정보의 개별 아이템이다.
 public struct AKDustResponseItem : Codable {
     
     public var _returnType : String

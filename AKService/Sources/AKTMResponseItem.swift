@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// AirKorea로부터 반환받은 TM좌표 정보의 개별 아이템이다.
 public struct AKTMResponseItem : Codable {
     var sggName : String
     var sidoName : String

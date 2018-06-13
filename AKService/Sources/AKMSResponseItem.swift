@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// AirKorea로부터 반환받은 측정소 정보의 개별 아이템이다.
 public struct AKMSResponseItem : Codable {
     
     var stationName : String

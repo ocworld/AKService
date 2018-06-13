@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// AirKorea로부터 반환받은 미세먼지 측정 정보를 미세먼지/초미세먼지, 1시간정보/24시간정보로 구분해서 저장한다.
 public struct AKDustResponseItems {
     
     public var pm25Value1hItem: AKDustResponseItem?
