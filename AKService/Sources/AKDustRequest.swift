@@ -10,10 +10,13 @@ import Foundation
 import Alamofire
 import CoreLocation
 
-fileprivate let msrDustRequestUrlFormat = "http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?stationName=%@&dataTerm=month&pageNo=1&numOfRows=10&ServiceKey=%@&ver=1.3&_returnType=json"
-
 fileprivate func requestDustUrl(stationName: String, serviceKey: String) -> URL? {
-    let msrDustRequestUrlString = String(format: msrDustRequestUrlFormat, arguments:[stationName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, serviceKey])
+    
+    guard let urlFormatString = urlFormatString(keyName: "AKMSRDustRequestUrlFormat") else {
+        return nil
+    }
+    
+    let msrDustRequestUrlString = String(format: urlFormatString, arguments:[stationName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, serviceKey])
     
     let url = URL(string: msrDustRequestUrlString)
     return url

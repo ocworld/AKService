@@ -10,11 +10,13 @@ import Foundation
 import Alamofire
 import CoreLocation
 
-fileprivate let nearTNRequestUrlFormat = "http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getTMStdrCrdnt?umdName=%@&pageNo=1&numOfRows=1&ServiceKey=%@&_returnType=json"
-
 fileprivate func requestTMUrl(umdName: String, serviceKey: String) -> URL? {
     
-    let nearTNRequestUrlString = String(format: nearTNRequestUrlFormat, arguments: [umdName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, serviceKey])
+    guard let urlFormatString = urlFormatString(keyName: "AKTNRequestUrlFormat") else {
+        return nil
+    }
+    
+    let nearTNRequestUrlString = String(format: urlFormatString, arguments: [umdName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, serviceKey])
     
     let url = URL(string: nearTNRequestUrlString)
     return url

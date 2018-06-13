@@ -10,10 +10,13 @@ import Foundation
 import Alamofire
 import CoreLocation
 
-fileprivate let nearMsrStnRequestUrlFormat = "http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=%@&tmY=%@&pageNo=1&numOfRows=1&ServiceKey=%@&_returnType=json"
-
 fileprivate func requestMSUrl(tmXString: String, tmYString: String, serviceKey: String) -> URL? {
-    let nearMsrStnRequestUrlString = String(format: nearMsrStnRequestUrlFormat, arguments:[tmXString, tmYString, serviceKey])
+    
+    guard let urlFormatString = urlFormatString(keyName: "AKMSNearMsrStnRequestUrlFormat") else {
+        return nil
+    }
+    
+    let nearMsrStnRequestUrlString = String(format: urlFormatString, arguments:[tmXString, tmYString, serviceKey])
     let url = URL(string: nearMsrStnRequestUrlString)
     return url
 }
