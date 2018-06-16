@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import CoreLocation
 
 /// urlFormatString - AKService에서 사용하는 url format key를 plist에서 읽어서 반환함
 ///
@@ -38,3 +38,45 @@ func urlFormatString(keyName: String) -> String? {
     
 }
 
+/// location을 입력으로 ko-kr locale의 placemark를 생성한다.
+///
+/// - Parameters:
+///   - location: 사용자의 위치정보이다
+///   - completionHandler: completionHandler이다.
+func requestGeoLocationKo(location: CLLocation, completionHandler: @escaping (CLPlacemark) -> Void) {
+    
+    CLGeocoder().reverseGeocodeLocation(location, preferredLocale: Locale(identifier: "Ko-Kr")) { (placemarks, error) in
+        guard let placemark = placemarks?.first else {
+            return
+        }
+        
+        completionHandler(placemark)
+    }
+    
+}
+
+func shortSidoName(longSidoName: String) -> String? {
+    
+    guard let bundle = Bundle(identifier: "com.keunhyunoh.AKService") else {
+        return nil
+    }
+    
+    guard let infoPath = bundle.path(forResource: "Info", ofType: "plist") else {
+        return nil
+    }
+    
+    guard let info = NSDictionary(contentsOfFile: infoPath) as? Dictionary<String, Any> else {
+        return nil
+    }
+    
+    guard let sidoDic = info["AKSidoLongToShowDictionary"] as? Dictionary<String, String> else {
+        return nil
+    }
+    
+    guard let shortSidoName = sidoDic[longSidoName] else {
+        return nil
+    }
+    
+    return shortSidoName
+    
+}

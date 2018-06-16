@@ -1,5 +1,5 @@
 //
-//  AKDustResponseItem.swift
+//  AKMSDustResponseItem.swift
 //  AKService
 //
 //  Created by Keunhyun Oh on 2018. 4. 22..
@@ -9,7 +9,7 @@
 import Foundation
 
 /// AirKorea로부터 반환받은 미세먼지 측정 정보의 개별 아이템이다.
-public struct AKDustResponseItem : Codable {
+public struct AKMSDustResponseItem : Codable {
     
     public var _returnType : String
     public var coGrade : String

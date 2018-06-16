@@ -50,23 +50,6 @@ fileprivate func tmResponseHandler(data: Data, placemark: CLPlacemark, completio
     
 }
 
-/// location을 입력으로 ko-kr locale의 placemark를 생성한다.
-///
-/// - Parameters:
-///   - location: 사용자의 위치정보이다
-///   - completionHandler: completionHandler이다.
-fileprivate func requestGeoLocationKo(location: CLLocation, completionHandler: @escaping (CLPlacemark) -> Void) {
-    
-    CLGeocoder().reverseGeocodeLocation(location, preferredLocale: Locale(identifier: "Ko-Kr")) { (placemarks, error) in
-        guard let placemark = placemarks?.first else {
-            return
-        }
-        
-        completionHandler(placemark)
-    }
-    
-}
-
 /// location을 기반으로 현재 동의 TM 좌표를 구해온다.
 ///
 /// - Parameters:
