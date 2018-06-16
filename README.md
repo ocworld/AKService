@@ -5,6 +5,11 @@
 [![License](https://img.shields.io/cocoapods/l/AKService.svg?style=flat)](https://cocoapods.org/pods/AKService)
 [![Platform](https://img.shields.io/cocoapods/p/AKService.svg?style=flat)](https://cocoapods.org/pods/AKService)
 
+## Description
+AirKorea에서 제공하는 API를 iOS에서 사용하기 위한 라이브러리입니다.
+
+미세먼지 요청 기능을 중심으로 제공합니다.
+
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
