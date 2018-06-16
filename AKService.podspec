@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'AKService'
-  s.version          = '0.2.4'
+  s.version          = '0.2.5'
   s.summary          = 'AirKorea 미세먼지 요청 라이브러리'
 
 # This description is used to generate tags and improve search results.
@@ -35,9 +35,7 @@ Pod::Spec.new do |s|
   
   s.swift_version = '4.1'
  
-  s.resource_bundles = {
-    'AKService' => ['AKService/Assets/*.plist']
-  }
+  s.resources = 'AKService/Assets/*.plist'
   
   # s.resource_bundles = {
   #   'AKService' => ['AKService/Assets/*.png']
