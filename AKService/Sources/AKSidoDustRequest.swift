@@ -9,10 +9,6 @@ import Foundation
 import Alamofire
 import CoreLocation
 
-fileprivate extension CLPlacemark {
-    
-}
-
 /// 미세먼지 데이터를 요청할 수 있는 url을 반환한다.
 ///
 /// - Parameters:
