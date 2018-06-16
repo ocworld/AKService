@@ -100,35 +100,42 @@ public func requestDust(response: AKMSResponse, serviceKey: String, completionHa
 public func requestDustItems(response: AKMSResponse, serviceKey: String, completionHandler: @escaping (AKMSDustResponseItems) -> Void) {
     
     requestDust(response: response, serviceKey: serviceKey) {
-        let newResult = $0.reduce(AKMSDustResponseItems(pm25Value1hItem: nil,pm25Value24hItem: nil,pm10Value1hItem: nil,pm10Value24hItem: nil), { (result, response) in
+        
+        let newResult =
+            //response안에 있는 list들을 flapMap처럼 펴기 위해 reduce함
+            $0.reduce(Array<AKMSDustResponseItem>(), { $0 + $1.list })
+                //최신 시간을 최신으로 오도록 보장하기 위해. 리스트가 아주 크진 않을 것이므로 정렬
+                //한국시간표기에 맞게 나오므로 그냥 단순 string 비교로 대체
+                .sorted(by: {$0.dataTime > $1.dataTime})
+                .reduce(AKMSDustResponseItems()) {
+                    
+                    var newResult = $0
+                    if $0.pm10ValueItem == nil {
+                        if let _ = Int($1.pm10Value) {
+                            newResult.pm10ValueItem = $1
+                        }
+                    }
             
-            var newResult = result
-            if result.pm10Value1hItem == nil {
-                if let item = response.pm10Value1hItem {
-                    newResult.pm10Value1hItem = item
+                    if $0.pm25ValueItem == nil {
+                        if let _ = Int($1.pm25Value) {
+                            newResult.pm25ValueItem = $1
+                        }
+                    }
+            
+                    if $0.pm10Value24hItem == nil {
+                        if let _ = Int($1.pm10Value24) {
+                            newResult.pm10Value24hItem = $1
+                        }
+                    }
+            
+                    if $0.pm25Value24hItem == nil {
+                        if let _ = Int($1.pm25Value24) {
+                            newResult.pm25Value24hItem = $1
+                        }
+                    }
+            
+                    return newResult
                 }
-            }
-            
-            if result.pm25Value1hItem == nil {
-                if let item = response.pm25Value1hItem {
-                    newResult.pm25Value1hItem = item
-                }
-            }
-            
-            if result.pm10Value24hItem == nil {
-                if let item = response.pm10Value24hItem {
-                    newResult.pm10Value24hItem = item
-                }
-            }
-            
-            if result.pm25Value24hItem == nil {
-                if let item = response.pm25Value24hItem {
-                    newResult.pm25Value24hItem = item
-                }
-            }
-            
-            return newResult
-        })
         
         completionHandler(newResult)
     }

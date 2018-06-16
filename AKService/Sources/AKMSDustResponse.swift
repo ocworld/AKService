@@ -31,7 +31,7 @@ extension AKMSDustResponse {
         return list.first
     }
     
-    var pm25Value1hItem: AKMSDustResponseItem? {
+    var pm25ValueItem: AKMSDustResponseItem? {
         return list.filter({Int($0.pm25Value) != nil}).first
     }
     
@@ -39,7 +39,7 @@ extension AKMSDustResponse {
         return list.filter({Int($0.pm25Value24) != nil}).first
     }
     
-    var pm10Value1hItem: AKMSDustResponseItem? {
+    var pm10ValueItem: AKMSDustResponseItem? {
         return list.filter({Int($0.pm10Value) != nil}).first
     }
 
