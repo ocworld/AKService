@@ -14,7 +14,7 @@ import CoreLocation
 /// - Returns: 성공하면 urlFormat이 반환된다. 실패하면 nil이 반환된다.
 func urlFormatString(keyName: String) -> String? {
     
-    guard let bundle = Bundle(identifier: "com.keunhyunoh.AKService") else {
+    guard let bundle = Bundle(identifier: "org.cocoapods.AKService") else {
         return nil
     }
     
