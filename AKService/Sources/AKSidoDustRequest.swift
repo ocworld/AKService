@@ -71,7 +71,7 @@ public func requestDustSido(location: CLLocation, serviceKey: String, completion
     
 }
 
-/// 사용자의 위치 정보를 입력으로 미세먼지를 요청한다. 시도의 하위 단위(구, 군 등)의 현재 소속된 곳의 데이터만 반환한다.
+/// 사용자의 위치 정보를 입력으로 미세먼지를 요청한다. 시도의 하위 단위(시, 구, 군 등)의 현재 소속된 곳의 데이터만 반환한다.
 /// 사용자의 위치 주변 측정소 정보를 얻어와서 각 측정소에 미세먼지 정보를 요청한다.
 ///
 /// - Parameters:
@@ -86,8 +86,13 @@ public func requestDust(location: CLLocation, serviceKey: String, completionHand
             return
         }
         
+        //전국에 예상치 못하게 locality에 값이 없을 수 있는 상황이 있을 수 있으니(가능한 있겠지만), locality가 없을 경우 sublocality까지 본다.
+        guard let cityName = placemark.locality ?? placemark.subLocality else {
+            return
+        }
+        
         requestDust(sidoName: sidoName, serviceKey: serviceKey) {
-            completionHandler($0.list.filter({$0.cityName == placemark.subAdministrativeArea})[0])
+            completionHandler($0.list.filter({$0.cityName == cityName})[0])
         }
     }
     
