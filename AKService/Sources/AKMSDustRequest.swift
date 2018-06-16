@@ -101,43 +101,48 @@ public func requestDustItems(response: AKMSResponse, serviceKey: String, complet
     
     requestDust(response: response, serviceKey: serviceKey) {
         
-        let newResult =
-            //response안에 있는 list들을 flapMap처럼 펴기 위해 reduce함
-            $0.reduce(Array<AKMSDustResponseItem>(), { $0 + $1.list })
+        //측정소 정보가 들어온 순서부터 확인
+        //동일 측정소라면 최신 시간부터 확인
+        //response안에 있는 list들을 flapMap처럼 펴기 위해 reduce함
+        let newResult = $0.reduce(AKMSDustResponseItems()) { (result, response) in
                 //최신 시간을 최신으로 오도록 보장하기 위해. 리스트가 아주 크진 않을 것이므로 정렬
                 //한국시간표기에 맞게 나오므로 그냥 단순 string 비교로 대체
+            return response
+                .list
                 .sorted(by: {$0.dataTime > $1.dataTime})
-                .reduce(AKMSDustResponseItems()) {
+                .reduce(result) { (result, item) in
                     
-                    var newResult = $0
-                    if $0.pm10ValueItem == nil {
-                        if let _ = Int($1.pm10Value) {
-                            newResult.pm10ValueItem = $1
+                    var newResult = result
+                    if result.pm10ValueItem == nil {
+                        if let _ = Int(item.pm10Value) {
+                            newResult.pm10ValueItem = item
                         }
                     }
-            
-                    if $0.pm25ValueItem == nil {
-                        if let _ = Int($1.pm25Value) {
-                            newResult.pm25ValueItem = $1
+                        
+                    if result.pm25ValueItem == nil {
+                        if let _ = Int(item.pm25Value) {
+                            newResult.pm25ValueItem = item
                         }
                     }
-            
-                    if $0.pm10Value24hItem == nil {
-                        if let _ = Int($1.pm10Value24) {
-                            newResult.pm10Value24hItem = $1
+                        
+                    if result.pm10Value24hItem == nil {
+                        if let _ = Int(item.pm10Value24) {
+                            newResult.pm10Value24hItem = item
                         }
                     }
-            
-                    if $0.pm25Value24hItem == nil {
-                        if let _ = Int($1.pm25Value24) {
-                            newResult.pm25Value24hItem = $1
+                        
+                    if result.pm25Value24hItem == nil {
+                        if let _ = Int(item.pm25Value24) {
+                            newResult.pm25Value24hItem = item
                         }
                     }
-            
+                        
                     return newResult
-                }
-        
+            }
+        }
+            
         completionHandler(newResult)
+        
     }
     
 }
