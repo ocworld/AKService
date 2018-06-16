@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AKSidoLongToShowDictionary</key>
+	<dict>
+		<key>강원도</key>
+		<string>강원</string>
+		<key>경기도</key>
+		<string>경기</string>
+		<key>경상남도</key>
+		<string>경남</string>
+		<key>경상북도</key>
+		<string>경북</string>
+		<key>광주광역시</key>
+		<string>광주</string>
+		<key>대구광역시</key>
+		<string>대구</string>
+		<key>대전광역시</key>
+		<string>대전</string>
+		<key>부산광역시</key>
+		<string>부산</string>
+		<key>서울특별시</key>
+		<string>서울</string>
+		<key>세종특별자치시</key>
+		<string>세종</string>
+		<key>울산광역시</key>
+		<string>울산</string>
+		<key>인천광역시</key>
+		<string>인천</string>
+		<key>재주특별자치도</key>
+		<string>제주</string>
+		<key>전라남도</key>
+		<string>전남</string>
+		<key>전라북도</key>
+		<string>전북</string>
+		<key>충청남도</key>
+		<string>충남</string>
+		<key>충청북도</key>
+		<string>충북</string>
+	</dict>
+	<key>AKUrls</key>
+	<dict>
+		<key>AKMSDustRequestUrlFormat</key>
+		<string>http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?stationName=%@&amp;dataTerm=month&amp;pageNo=1&amp;numOfRows=10&amp;ServiceKey=%@&amp;ver=1.3&amp;_returnType=json</string>
+		<key>AKMSNearMsrStnRequestUrlFormat</key>
+		<string>http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=%@&amp;tmY=%@&amp;pageNo=1&amp;numOfRows=1&amp;ServiceKey=%@&amp;_returnType=json</string>
+		<key>AKSidoDustRequstUrlFormat</key>
+		<string>http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getCtprvnMesureSidoLIst?sidoName=%@&amp;searchCondition=HOUR&amp;pageNo=1&amp;numOfRows=10&amp;ServiceKey=%@&amp;_returnType=json</string>
+		<key>AKTMRequestUrlFormat</key>
+		<string>http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getTMStdrCrdnt?umdName=%@&amp;pageNo=1&amp;numOfRows=1&amp;ServiceKey=%@&amp;_returnType=json</string>
+	</dict>
+</dict>
+</plist>

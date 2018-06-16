@@ -18,7 +18,7 @@ func urlFormatString(keyName: String) -> String? {
         return nil
     }
     
-    guard let infoPath = bundle.path(forResource: "Info", ofType: "plist") else {
+    guard let infoPath = bundle.path(forResource: "AKInfo", ofType: "plist") else {
         return nil
     }
     
