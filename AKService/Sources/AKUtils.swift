@@ -55,6 +55,11 @@ func requestGeoLocationKo(location: CLLocation, completionHandler: @escaping (CL
     
 }
 
+/// Long sido Name을 short sidoName으로 변경한다.
+///
+/// - Parameters:
+///   - longSidoName: 사용자의 위치정보이다
+/// - Returns: short sidoName을 변환한다. 실패하면 nil을 반환한다.
 func shortSidoName(longSidoName: String) -> String? {
     
     guard let bundle = Bundle(identifier: "com.keunhyunoh.AKService") else {
