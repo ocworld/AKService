@@ -45,7 +45,7 @@
 		<string>http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?stationName=%@&amp;dataTerm=month&amp;pageNo=1&amp;numOfRows=10&amp;ServiceKey=%@&amp;ver=1.3&amp;_returnType=json</string>
 		<key>AKMSNearMsrStnRequestUrlFormat</key>
 		<string>http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=%@&amp;tmY=%@&amp;pageNo=1&amp;numOfRows=1&amp;ServiceKey=%@&amp;_returnType=json</string>
-		<key>AKSidoDustRequstUrlFormat</key>
+		<key>AKSidoDustRequestUrlFormat</key>
 		<string>http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getCtprvnMesureSidoLIst?sidoName=%@&amp;searchCondition=HOUR&amp;pageNo=1&amp;numOfRows=10&amp;ServiceKey=%@&amp;_returnType=json</string>
 		<key>AKTMRequestUrlFormat</key>
 		<string>http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getTMStdrCrdnt?umdName=%@&amp;pageNo=1&amp;numOfRows=1&amp;ServiceKey=%@&amp;_returnType=json</string>
