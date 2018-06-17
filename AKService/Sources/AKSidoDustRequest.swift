@@ -178,7 +178,7 @@ public func requestDustCity(placemark: CLPlacemark,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponseItem) -> Void) {
+                            completionHandler: @escaping (AKSidoDustResponseItem?) -> Void) {
     
     guard let location = placemark.location else {
         return
