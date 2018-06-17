@@ -111,7 +111,7 @@ public func requestDustCity(location: CLLocation,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponseItem) -> Void) {
+                            completionHandler: @escaping (AKSidoDustResponseItem?) -> Void) {
     
     requestGeoLocationKo(location: location) { (placemark) in
         
@@ -128,7 +128,13 @@ public func requestDustCity(location: CLLocation,
                         pageNo: pageNo,
                         numOfRows: numOfRows,
                         serviceKey: serviceKey) {
-            completionHandler($0.list.filter({$0.cityName == cityName})[0])
+                            let filteredList = $0.list.filter({$0.cityName == cityName})
+                            if filteredList.isEmpty {
+                                completionHandler(nil)
+                            } else {
+                                completionHandler(filteredList[0])
+                            }
+                            
         }
     }
     
