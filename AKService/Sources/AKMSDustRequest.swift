@@ -10,6 +10,9 @@ import Foundation
 import Alamofire
 import CoreLocation
 
+/// stationName과 msDustResponse를 매핑한 값
+public typealias AKMSDustResult = (stationName: String, msDustResponse : AKMSDustResponse)
+
 /// 미세먼지 데이터를 요청할 수 있는 url을 반환한다.
 ///
 /// - Parameters:
@@ -35,7 +38,7 @@ fileprivate func requestDustUrl(stationName: String, serviceKey: String) -> URL?
 ///   - stationName: 측정소 이름. AKMSRequest를 사용해서 얻어온 측정소 이름이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(stationName: String, serviceKey: String, completionHandler: @escaping (AKMSDustResponse) -> Void) {
+public func requestDust(stationName: String, serviceKey: String, completionHandler: @escaping (AKMSDustResult) -> Void) {
     
     guard let url = requestDustUrl(stationName: stationName, serviceKey: serviceKey) else {
         return
@@ -47,7 +50,7 @@ public func requestDust(stationName: String, serviceKey: String, completionHandl
             return
         }
         
-        completionHandler(response)
+        completionHandler((stationName: stationName, msDustResponse: response))
         
     }
 }
@@ -58,9 +61,9 @@ public func requestDust(stationName: String, serviceKey: String, completionHandl
 ///   - responseItem: AKMSResponseItem. AKMSRequest를 사용해서 얻어온 측정소 정보이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(responseItem : AKMSResponseItem, serviceKey: String, completionHandler: @escaping (AKMSDustResponse) -> Void) {
+public func requestDust(msResponseItem : AKMSResponseItem, serviceKey: String, completionHandler: @escaping (AKMSDustResult) -> Void) {
     
-    requestDust(stationName: responseItem.stationName, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestDust(stationName: msResponseItem.stationName, serviceKey: serviceKey, completionHandler: completionHandler)
     
 }
 
@@ -70,15 +73,16 @@ public func requestDust(responseItem : AKMSResponseItem, serviceKey: String, com
 ///   - response: AKMSResponse. AKMSRequest를 사용해서 얻어온 측정소 정보이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(response: AKMSResponse, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResponse>) -> Void) {
+public func requestDust(msResponse: AKMSResponse, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
     
-    func eachCompletionHandler(response: AKMSResponse) -> ((AKMSDustResponse) -> Void) {
+    func eachCompletionHandler(msResponse: AKMSResponse) -> ((AKMSDustResult) -> Void) {
         
-        let responseCount = response.list.count
-        var array: [AKMSDustResponse] = []
+        let responseCount = msResponse.list.count
+        var array: [AKMSDustResult] = []
         
         return {
             array.append($0)
+            
             if responseCount == array.count {
                 completionHandler(array)
             }
@@ -86,8 +90,8 @@ public func requestDust(response: AKMSResponse, serviceKey: String, completionHa
         
     }
     
-    let handler = eachCompletionHandler(response: response)
-    response.list.forEach { requestDust(responseItem: $0, serviceKey: serviceKey, completionHandler: handler) }
+    let handler = eachCompletionHandler(msResponse: msResponse)
+    msResponse.list.forEach { requestDust(msResponseItem: $0, serviceKey: serviceKey, completionHandler: handler) }
     
 }
 
@@ -97,51 +101,54 @@ public func requestDust(response: AKMSResponse, serviceKey: String, completionHa
 ///   - response: AKMSResponse. AKMSRequest를 사용해서 얻어온 측정소 정보이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustItems(response: AKMSResponse, serviceKey: String, completionHandler: @escaping (AKMSDustResponseItems) -> Void) {
+public func requestDustItems(msResponse: AKMSResponse, serviceKey: String, completionHandler: @escaping (AKMSDustResultItems) -> Void) {
     
-    requestDust(response: response, serviceKey: serviceKey) {
+    requestDust(msResponse: msResponse, serviceKey: serviceKey) {
+        resultItemArray in
         
-        //측정소 정보가 들어온 순서부터 확인
-        //동일 측정소라면 최신 시간부터 확인
-        //response안에 있는 list들을 flapMap처럼 펴기 위해 reduce함
-        let newResult = $0.reduce(AKMSDustResponseItems()) { (result, response) in
-                //최신 시간을 최신으로 오도록 보장하기 위해. 리스트가 아주 크진 않을 것이므로 정렬
-                //한국시간표기에 맞게 나오므로 그냥 단순 string 비교로 대체
-            return response
-                .list
-                .sorted(by: {$0.dataTime > $1.dataTime})
-                .reduce(result) { (result, item) in
-                    
-                    var newResult = result
-                    if result.pm10ValueItem == nil {
-                        if let _ = Int(item.pm10Value) {
-                            newResult.pm10ValueItem = item
-                        }
+        var resultItems = AKMSDustResultItems()
+        for resultItem in resultItemArray {
+            let msDustResponse = resultItem.msDustResponse
+            //최신 시간을 최신으로 오도록 보장하기 위해. 리스트가 아주 크진 않을 것이므로 정렬
+            //한국시간표기에 맞게 나오므로 그냥 단순 string 비교로 대체
+            let sortedDustItems = msDustResponse.list.sorted {$0.dataTime > $1.dataTime}
+            
+            for dustItem in sortedDustItems {
+                if resultItems.pm10ValueItem == nil {
+                    if let _ = Int(dustItem.pm10Value) {
+                        resultItems.pm10ValueItem = (stationName: resultItem.stationName, msDustResponseItem: dustItem)
                     }
-                        
-                    if result.pm25ValueItem == nil {
-                        if let _ = Int(item.pm25Value) {
-                            newResult.pm25ValueItem = item
-                        }
+                }
+                
+                if resultItems.pm25ValueItem == nil {
+                    if let _ = Int(dustItem.pm25Value) {
+                        resultItems.pm25ValueItem = (stationName: resultItem.stationName, msDustResponseItem: dustItem)
                     }
-                        
-                    if result.pm10Value24hItem == nil {
-                        if let _ = Int(item.pm10Value24) {
-                            newResult.pm10Value24hItem = item
-                        }
+                }
+                
+                if resultItems.pm10Value24hItem == nil {
+                    if let _ = Int(dustItem.pm10Value24) {
+                        resultItems.pm10Value24hItem = (stationName: resultItem.stationName, msDustResponseItem: dustItem)
                     }
-                        
-                    if result.pm25Value24hItem == nil {
-                        if let _ = Int(item.pm25Value24) {
-                            newResult.pm25Value24hItem = item
-                        }
+                }
+                
+                if resultItems.pm25Value24hItem == nil {
+                    if let _ = Int(dustItem.pm25Value24) {
+                        resultItems.pm25Value24hItem = (stationName: resultItem.stationName, msDustResponseItem: dustItem)
                     }
-                        
-                    return newResult
+                }
+                
+                if resultItems.isFullSet {
+                    break
+                }
+            }
+            
+            if resultItems.isFullSet {
+                break
             }
         }
-            
-        completionHandler(newResult)
+        
+        completionHandler(resultItems)
         
     }
     
@@ -154,9 +161,9 @@ public func requestDustItems(response: AKMSResponse, serviceKey: String, complet
 ///   - location: 사용자의 위치 정보이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(location: CLLocation, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResponse>) -> Void) {
+public func requestDust(location: CLLocation, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
     
-    requestMS(location: location, serviceKey: serviceKey) { requestDust(response: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(location: location, serviceKey: serviceKey) { requestDust(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
     }
     
 }
@@ -168,9 +175,9 @@ public func requestDust(location: CLLocation, serviceKey: String, completionHand
 ///   - location: 사용자의 위치 정보이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustItems(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKMSDustResponseItems) -> Void) {
+public func requestDustItems(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKMSDustResultItems) -> Void) {
     
-    requestMS(location: location, serviceKey: serviceKey) { requestDustItems(response: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(location: location, serviceKey: serviceKey) { requestDustItems(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
     }
     
 }
@@ -182,9 +189,9 @@ public func requestDustItems(location: CLLocation, serviceKey: String, completio
 ///   - placemark: 사용자의 장소 정보이다. 한국지역에만 제공하기 때문에 내부에서 locale을 ko-kr로 변경하기 위해서 placemark 내부에서 location 정보만을 사용한다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResponse>) -> Void) {
+public func requestDust(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
     
-    requestMS(placemark: placemark, serviceKey: serviceKey) { requestDust(response: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(placemark: placemark, serviceKey: serviceKey) { requestDust(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
     }
     
 }
@@ -196,9 +203,9 @@ public func requestDust(placemark: CLPlacemark, serviceKey: String, completionHa
 ///   - placemark: 사용자의 장소 정보이다. 한국지역에만 제공하기 때문에 내부에서 locale을 ko-kr로 변경하기 위해서 placemark 내부에서 location 정보만을 사용한다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustItems(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKMSDustResponseItems) -> Void) {
+public func requestDustItems(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKMSDustResultItems) -> Void) {
     
-    requestMS(placemark: placemark, serviceKey: serviceKey) { requestDustItems(response: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(placemark: placemark, serviceKey: serviceKey) { requestDustItems(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
     }
     
 }
