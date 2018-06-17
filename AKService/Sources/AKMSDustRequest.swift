@@ -17,15 +17,24 @@ public typealias AKMSDustResult = (stationName: String, msDustResponse : AKMSDus
 ///
 /// - Parameters:
 ///   - stationName: 측정소 이름. AKMSRequest를 사용해서 얻어온 측정소 이름이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 /// - Returns: 성공하면 url을 반환한다. 실패하면 nil을 반환한다.
-fileprivate func requestDustUrl(stationName: String, serviceKey: String) -> URL? {
+fileprivate func requestDustUrl(stationName: String,
+                                pageNo: Int,
+                                numOfRows: Int,
+                                serviceKey: String) -> URL? {
     
     guard let urlFormatString = urlFormatString(keyName: "AKMSDustRequestUrlFormat") else {
         return nil
     }
     
-    let msrDustRequestUrlString = String(format: urlFormatString, arguments:[stationName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, serviceKey])
+    let msrDustRequestUrlString = String(format: urlFormatString,
+                                         arguments: [stationName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!,
+                                                     String(pageNo),
+                                                     String(numOfRows),
+                                                     serviceKey])
     
     let url = URL(string: msrDustRequestUrlString)
     return url
@@ -36,11 +45,20 @@ fileprivate func requestDustUrl(stationName: String, serviceKey: String) -> URL?
 ///
 /// - Parameters:
 ///   - stationName: 측정소 이름. AKMSRequest를 사용해서 얻어온 측정소 이름이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(stationName: String, serviceKey: String, completionHandler: @escaping (AKMSDustResult) -> Void) {
+public func requestDust(stationName: String,
+                        pageNo: Int,
+                        numOfRows: Int,
+                        serviceKey: String,
+                        completionHandler: @escaping (AKMSDustResult) -> Void) {
     
-    guard let url = requestDustUrl(stationName: stationName, serviceKey: serviceKey) else {
+    guard let url = requestDustUrl(stationName: stationName,
+                                   pageNo: pageNo,
+                                   numOfRows: numOfRows,
+                                   serviceKey: serviceKey) else {
         return
     }
     
@@ -59,11 +77,21 @@ public func requestDust(stationName: String, serviceKey: String, completionHandl
 ///
 /// - Parameters:
 ///   - responseItem: AKMSResponseItem. AKMSRequest를 사용해서 얻어온 측정소 정보이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(msResponseItem : AKMSResponseItem, serviceKey: String, completionHandler: @escaping (AKMSDustResult) -> Void) {
+public func requestDust(msResponseItem : AKMSResponseItem,
+                        pageNo: Int,
+                        numOfRows: Int,
+                        serviceKey: String,
+                        completionHandler: @escaping (AKMSDustResult) -> Void) {
     
-    requestDust(stationName: msResponseItem.stationName, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestDust(stationName: msResponseItem.stationName,
+                pageNo: pageNo,
+                numOfRows: numOfRows,
+                serviceKey: serviceKey,
+                completionHandler: completionHandler)
     
 }
 
@@ -71,9 +99,15 @@ public func requestDust(msResponseItem : AKMSResponseItem, serviceKey: String, c
 ///
 /// - Parameters:
 ///   - response: AKMSResponse. AKMSRequest를 사용해서 얻어온 측정소 정보이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(msResponse: AKMSResponse, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
+public func requestDust(msResponse: AKMSResponse,
+                        pageNo: Int,
+                        numOfRows: Int,
+                        serviceKey: String,
+                        completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
     
     func eachCompletionHandler(msResponse: AKMSResponse) -> ((AKMSDustResult) -> Void) {
         
@@ -91,7 +125,13 @@ public func requestDust(msResponse: AKMSResponse, serviceKey: String, completion
     }
     
     let handler = eachCompletionHandler(msResponse: msResponse)
-    msResponse.list.forEach { requestDust(msResponseItem: $0, serviceKey: serviceKey, completionHandler: handler) }
+    msResponse.list.forEach {
+        requestDust(msResponseItem: $0,
+                    pageNo: pageNo,
+                    numOfRows: numOfRows,
+                    serviceKey: serviceKey,
+                    completionHandler: handler)
+    }
     
 }
 
@@ -99,11 +139,17 @@ public func requestDust(msResponse: AKMSResponse, serviceKey: String, completion
 ///
 /// - Parameters:
 ///   - response: AKMSResponse. AKMSRequest를 사용해서 얻어온 측정소 정보이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustItems(msResponse: AKMSResponse, serviceKey: String, completionHandler: @escaping (AKMSDustResultItems) -> Void) {
+public func requestDustItems(msResponse: AKMSResponse,
+                             pageNo: Int,
+                             numOfRows: Int,
+                             serviceKey: String,
+                             completionHandler: @escaping (AKMSDustResultItems) -> Void) {
     
-    requestDust(msResponse: msResponse, serviceKey: serviceKey) {
+    requestDust(msResponse: msResponse, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
         resultItemArray in
         
         var resultItems = AKMSDustResultItems()
@@ -159,11 +205,29 @@ public func requestDustItems(msResponse: AKMSResponse, serviceKey: String, compl
 ///
 /// - Parameters:
 ///   - location: 사용자의 위치 정보이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
+///   - msPageNo: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - msNumOfRows: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 msNumOfRows이다. 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(location: CLLocation, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
+public func requestDust(location: CLLocation,
+                        pageNo: Int,
+                        numOfRows: Int,
+                        msPageNo: Int,
+                        msNumOfRows: Int,
+                        serviceKey: String,
+                        completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
     
-    requestMS(location: location, serviceKey: serviceKey) { requestDust(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(location: location,
+              pageNo: msPageNo,
+              numOfRows: msNumOfRows,
+              serviceKey: serviceKey) {
+                requestDust(msResponse: $0,
+                            pageNo: pageNo,
+                            numOfRows: numOfRows,
+                            serviceKey: serviceKey,
+                            completionHandler: completionHandler)
     }
     
 }
@@ -173,11 +237,29 @@ public func requestDust(location: CLLocation, serviceKey: String, completionHand
 ///
 /// - Parameters:
 ///   - location: 사용자의 위치 정보이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
+///   - msPageNo: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - msNumOfRows: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 msNumOfRows이다. 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustItems(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKMSDustResultItems) -> Void) {
+public func requestDustItems(location: CLLocation,
+                             pageNo: Int,
+                             numOfRows: Int,
+                             msPageNo: Int,
+                             msNumOfRows: Int,
+                             serviceKey: String,
+                             completionHandler: @escaping (AKMSDustResultItems) -> Void) {
     
-    requestMS(location: location, serviceKey: serviceKey) { requestDustItems(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(location: location,
+              pageNo: msPageNo,
+              numOfRows: msNumOfRows,
+              serviceKey: serviceKey) {
+                requestDustItems(msResponse: $0,
+                                 pageNo: pageNo,
+                                 numOfRows: numOfRows,
+                                 serviceKey: serviceKey,
+                                 completionHandler: completionHandler)
     }
     
 }
@@ -187,11 +269,29 @@ public func requestDustItems(location: CLLocation, serviceKey: String, completio
 ///
 /// - Parameters:
 ///   - placemark: 사용자의 장소 정보이다. 한국지역에만 제공하기 때문에 내부에서 locale을 ko-kr로 변경하기 위해서 placemark 내부에서 location 정보만을 사용한다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
+///   - msPageNo: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - msNumOfRows: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 msNumOfRows이다. 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDust(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
+public func requestDust(placemark: CLPlacemark,
+                        pageNo: Int,
+                        numOfRows: Int,
+                        msPageNo: Int,
+                        msNumOfRows: Int,
+                        serviceKey: String,
+                        completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
     
-    requestMS(placemark: placemark, serviceKey: serviceKey) { requestDust(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(placemark: placemark,
+              pageNo: msPageNo,
+              numOfRows: msNumOfRows,
+              serviceKey: serviceKey) {
+                requestDust(msResponse: $0,
+                            pageNo: pageNo,
+                            numOfRows: numOfRows,
+                            serviceKey: serviceKey,
+                            completionHandler: completionHandler)
     }
     
 }
@@ -201,11 +301,29 @@ public func requestDust(placemark: CLPlacemark, serviceKey: String, completionHa
 ///
 /// - Parameters:
 ///   - placemark: 사용자의 장소 정보이다. 한국지역에만 제공하기 때문에 내부에서 locale을 ko-kr로 변경하기 위해서 placemark 내부에서 location 정보만을 사용한다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
+///   - msPageNo: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - msNumOfRows: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 msNumOfRows이다. 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustItems(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKMSDustResultItems) -> Void) {
+public func requestDustItems(placemark: CLPlacemark,
+                             pageNo: Int,
+                             numOfRows: Int,
+                             msPageNo: Int,
+                             msNumOfRows: Int,
+                             serviceKey: String,
+                             completionHandler: @escaping (AKMSDustResultItems) -> Void) {
     
-    requestMS(placemark: placemark, serviceKey: serviceKey) { requestDustItems(msResponse: $0, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestMS(placemark: placemark,
+              pageNo: msPageNo,
+              numOfRows: msNumOfRows,
+              serviceKey: serviceKey) {
+                requestDustItems(msResponse: $0,
+                                 pageNo: pageNo,
+                                 numOfRows: numOfRows,
+                                 serviceKey: serviceKey,
+                                 completionHandler: completionHandler)
     }
     
 }

@@ -13,15 +13,24 @@ import CoreLocation
 ///
 /// - Parameters:
 ///   - sidoName: 시도 이름. 반드시 한국어여야한다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 /// - Returns: 성공하면 url을 반환한다. 실패하면 nil을 반환한다.
-fileprivate func requestDustUrl(sidoName: String, serviceKey: String) -> URL? {
+fileprivate func requestDustUrl(sidoName: String,
+                                pageNo: Int,
+                                numOfRows: Int,
+                                serviceKey: String) -> URL? {
     
     guard let urlFormatString = urlFormatString(keyName: "AKSidoDustRequestUrlFormat") else {
         return nil
     }
     
-    let msrDustRequestUrlString = String(format: urlFormatString, arguments:[sidoName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!, serviceKey])
+    let msrDustRequestUrlString = String(format: urlFormatString,
+                                         arguments:[sidoName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!,
+                                                    String(pageNo),
+                                                    String(numOfRows),
+                                                    serviceKey])
     
     let url = URL(string: msrDustRequestUrlString)
     return url
@@ -31,11 +40,19 @@ fileprivate func requestDustUrl(sidoName: String, serviceKey: String) -> URL? {
 ///
 /// - Parameters:
 ///   - sidoName: 시도 이름. 반드시 한국어여야한다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustSido(sidoName: String, serviceKey: String, completionHandler: @escaping (AKSidoDustResponse) -> Void) {
+public func requestDustSido(sidoName: String,
+                            pageNo: Int,
+                            numOfRows: Int,
+                            serviceKey: String,
+                            completionHandler: @escaping (AKSidoDustResponse) -> Void) {
     //short 이름이 없으면 그 자체가 short일수도 있으니 그대로 pass
     guard let url = requestDustUrl(sidoName: shortSidoName(longSidoName: sidoName) ?? sidoName,
+                                   pageNo: pageNo,
+                                   numOfRows: numOfRows,
                                    serviceKey: serviceKey) else {
         return
     }
@@ -56,9 +73,15 @@ public func requestDustSido(sidoName: String, serviceKey: String, completionHand
 ///
 /// - Parameters:
 ///   - location: 사용자의 위치 정보이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustSido(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKSidoDustResponse) -> Void) {
+public func requestDustSido(location: CLLocation,
+                            pageNo: Int,
+                            numOfRows: Int,
+                            serviceKey: String,
+                            completionHandler: @escaping (AKSidoDustResponse) -> Void) {
 
     requestGeoLocationKo(location: location) {
         
@@ -66,7 +89,11 @@ public func requestDustSido(location: CLLocation, serviceKey: String, completion
             return
         }
         
-        requestDustSido(sidoName: sidoName, serviceKey: serviceKey, completionHandler: completionHandler)
+        requestDustSido(sidoName: sidoName,
+                        pageNo: pageNo,
+                        numOfRows: numOfRows,
+                        serviceKey: serviceKey,
+                        completionHandler: completionHandler)
     }
     
 }
@@ -76,9 +103,15 @@ public func requestDustSido(location: CLLocation, serviceKey: String, completion
 ///
 /// - Parameters:
 ///   - location: 사용자의 위치 정보이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustCity(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKSidoDustResponseItem) -> Void) {
+public func requestDustCity(location: CLLocation,
+                            pageNo: Int,
+                            numOfRows: Int,
+                            serviceKey: String,
+                            completionHandler: @escaping (AKSidoDustResponseItem) -> Void) {
     
     requestGeoLocationKo(location: location) { (placemark) in
         
@@ -91,7 +124,10 @@ public func requestDustCity(location: CLLocation, serviceKey: String, completion
             return
         }
         
-        requestDustSido(sidoName: sidoName, serviceKey: serviceKey) {
+        requestDustSido(sidoName: sidoName,
+                        pageNo: pageNo,
+                        numOfRows: numOfRows,
+                        serviceKey: serviceKey) {
             completionHandler($0.list.filter({$0.cityName == cityName})[0])
         }
     }
@@ -102,15 +138,25 @@ public func requestDustCity(location: CLLocation, serviceKey: String, completion
 ///
 /// - Parameters:
 ///   - placemark: 사용자의 장소 정보이다. 한국지역에만 제공하기 때문에 내부에서 locale을 ko-kr로 변경하기 위해서 placemark 내부에서 location 정보만을 사용한다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustSido(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKSidoDustResponse) -> Void) {
+public func requestDustSido(placemark: CLPlacemark,
+                            pageNo: Int,
+                            numOfRows: Int,
+                            serviceKey: String,
+                            completionHandler: @escaping (AKSidoDustResponse) -> Void) {
     
     guard let location = placemark.location else {
         return
     }
     
-    requestDustSido(location: location, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestDustSido(location: location,
+                    pageNo: pageNo,
+                    numOfRows: numOfRows,
+                    serviceKey: serviceKey,
+                    completionHandler: completionHandler)
     
 }
 
@@ -118,14 +164,24 @@ public func requestDustSido(placemark: CLPlacemark, serviceKey: String, completi
 ///
 /// - Parameters:
 ///   - placemark: 사용자의 장소 정보이다. 한국지역에만 제공하기 때문에 내부에서 locale을 ko-kr로 변경하기 위해서 placemark 내부에서 location 정보만을 사용한다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustCity(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKSidoDustResponseItem) -> Void) {
+public func requestDustCity(placemark: CLPlacemark,
+                            pageNo: Int,
+                            numOfRows: Int,
+                            serviceKey: String,
+                            completionHandler: @escaping (AKSidoDustResponseItem) -> Void) {
     
     guard let location = placemark.location else {
         return
     }
     
-    requestDustCity(location: location, serviceKey: serviceKey, completionHandler: completionHandler)
+    requestDustCity(location: location,
+                    pageNo: pageNo,
+                    numOfRows: numOfRows,
+                    serviceKey: serviceKey,
+                    completionHandler: completionHandler)
     
 }
