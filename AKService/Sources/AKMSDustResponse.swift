@@ -12,7 +12,7 @@ import Foundation
 public struct AKMSDustResponse : Codable {
     
     var list : [AKMSDustResponseItem]
-    
+    var ArpltnInforInqireSvcVo : AKMSDustResponseItem
     var totalCount : Int
 
 }

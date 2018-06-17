@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'AKService'
-  s.version          = '0.2.17'
+  s.version          = '0.3.0'
   s.summary          = 'AirKorea 미세먼지 요청 라이브러리'
 
 # This description is used to generate tags and improve search results.
