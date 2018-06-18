@@ -36,10 +36,11 @@ fileprivate func requestDustFrcstUrl(date: Date, informCode: AKMinuDustFrcstDspt
 /// 미세먼지 데이터 예측 데이터를 요청한다.
 ///
 /// - Parameters:
+///   - date: 요청 기준 date이다. 내부적으로 ko-kr locale로 지정해서 요청한다. 한국날짜로 예보정보를 가져온다.
 ///   - informCode: PM10과 PM25 중 어떤 값을 예보하는지 값을 가져온다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustFrcst(informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String, completionHandler: @escaping (AKMinuDustFrcstDspthResponse) -> Void) {
+public func requestDustFrcst(date: Date, informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String, completionHandler: @escaping (AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?) -> Void) {
     
     guard let url = requestDustFrcstUrl(date: Date(), informCode: informCode, serviceKey: serviceKey) else {
                                     return
@@ -47,11 +48,11 @@ public func requestDustFrcst(informCode: AKMinuDustFrcstDspthInformCode, service
     
     Alamofire.request(url).responseJSON {
         
-        guard let response = try? JSONDecoder().decode(AKMinuDustFrcstDspthResponse.self, from: $0.data!) else {
-            return
+        if let response = try? JSONDecoder().decode(AKMinuDustFrcstDspthResponse.self, from: $0.data!) {
+            completionHandler(informCode, response)
+        } else {
+            completionHandler(informCode, nil)
         }
-        
-        completionHandler(response)
         
     }
 }
@@ -59,21 +60,22 @@ public func requestDustFrcst(informCode: AKMinuDustFrcstDspthInformCode, service
 /// 미세먼지 데이터 예측 데이터를 요청한다. PM25와 PM10 데이터를 같이 요청한다.
 ///
 /// - Parameters:
+///   - date: 요청 기준 date이다. 내부적으로 ko-kr locale로 지정해서 요청한다. 한국날짜로 예보정보를 가져온다.
 ///   - informCode: PM10과 PM25 중 어떤 값을 예보하는지 값을 가져온다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustFrcst(serviceKey: String,
-                        completionHandler: @escaping (Dictionary<AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse>) -> Void) {
+public func requestDustFrcst(date: Date, serviceKey: String,
+                        completionHandler: @escaping (Dictionary<AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?>) -> Void) {
     
-    func eachCompletionHandler() -> ((AKMinuDustFrcstDspthResponse) -> Void) {
+    func eachCompletionHandler() -> ((AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?) -> Void) {
         
-        var dictionary: [AKMinuDustFrcstDspthInformCode : AKMinuDustFrcstDspthResponse] = [:]
+        var dictionary: [AKMinuDustFrcstDspthInformCode : AKMinuDustFrcstDspthResponse?] = [:]
         
         return {
-            let informCode = AKMinuDustFrcstDspthInformCode(rawValue: $0.parm.informCode)
-            dictionary[informCode!] = $0
+            let informCode = $0
+            dictionary[informCode] = $1
             
-            if dictionary[.PM25] != nil && dictionary[.PM10] != nil {
+            if dictionary.keys.contains(.PM25) && dictionary.keys.contains(.PM10) {
                 completionHandler(dictionary)
             }
         }
@@ -83,7 +85,7 @@ public func requestDustFrcst(serviceKey: String,
     let handler = eachCompletionHandler()
     let informCodeArray : [AKMinuDustFrcstDspthInformCode] = [.PM25, .PM10]
     informCodeArray.forEach {
-        requestDustFrcst(informCode: $0, serviceKey: serviceKey, completionHandler: handler)
+        requestDustFrcst(date: date, informCode: $0, serviceKey: serviceKey, completionHandler: handler)
     }
     
 }
