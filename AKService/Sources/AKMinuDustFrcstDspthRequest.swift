@@ -48,11 +48,17 @@ public func requestDustFrcst(date: Date, informCode: AKMinuDustFrcstDspthInformC
     
     Alamofire.request(url).responseJSON {
         
-        if let response = try? JSONDecoder().decode(AKMinuDustFrcstDspthResponse.self, from: $0.data!) {
-            completionHandler(informCode, response)
-        } else {
+        guard let data = $0.data else {
             completionHandler(informCode, nil)
+            return
         }
+        
+        guard let response = try? JSONDecoder().decode(AKMinuDustFrcstDspthResponse.self, from: data) else {
+            completionHandler(informCode, nil)
+            return
+        }
+        
+        completionHandler(informCode, response)
         
     }
 }

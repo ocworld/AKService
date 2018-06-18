@@ -35,9 +35,10 @@ fileprivate func requestTMUrl(umdName: String, serviceKey: String) -> URL? {
 ///   - data: TM좌표 요청 응답의 json data이다.
 ///   - placemark: 동이름이 속해져있는 장소의 정보이다. ko-kr locale이어야한다.
 ///   - completionHandler: 사용자가 처리할 completionHandler이다. 필터링된 정보만 전달된다.
-fileprivate func tmResponseHandler(data: Data, placemark: CLPlacemark, completionHandler: @escaping (AKTMResponse) -> Void) {
+fileprivate func tmResponseHandler(data: Data, placemark: CLPlacemark, completionHandler: @escaping (AKTMResponse?) -> Void) {
     
     guard let response = try? JSONDecoder().decode(AKTMResponse.self, from: data) else {
+        completionHandler(nil)
         return
     }
     
@@ -56,7 +57,7 @@ fileprivate func tmResponseHandler(data: Data, placemark: CLPlacemark, completio
 ///   - location: 사용자의 위치정보이다
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestTM(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKTMResponse) -> Void)  {
+public func requestTM(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKTMResponse?) -> Void)  {
     
     //location을 한국어로 변환
     requestGeoLocationKo(location: location) { (placemark) in
@@ -66,7 +67,12 @@ public func requestTM(location: CLLocation, serviceKey: String, completionHandle
         }
         
         Alamofire.request(url).responseJSON {
-            tmResponseHandler(data: $0.data!, placemark: placemark, completionHandler: completionHandler)
+            guard let data = $0.data else {
+                completionHandler(nil)
+                return
+            }
+            
+            tmResponseHandler(data: data, placemark: placemark, completionHandler: completionHandler)
         }
         
     }
@@ -79,7 +85,7 @@ public func requestTM(location: CLLocation, serviceKey: String, completionHandle
 ///   - placemark: 사용자의 장소정보이다. 내부적으로 locale을 ko-kr로만 지정하기 위해 location 값만 사용한다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestTM(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKTMResponse) -> Void)  {
+public func requestTM(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKTMResponse?) -> Void)  {
     
     requestTM(location: placemark.location ?? CLLocation(), serviceKey: serviceKey, completionHandler: completionHandler)
     

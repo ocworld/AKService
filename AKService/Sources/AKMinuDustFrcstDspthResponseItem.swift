@@ -16,7 +16,7 @@ public struct AKMinuDustFrcstDspthResponseItem : Codable {
     public var f_data_time1 : String
     public var f_data_time2 : String
     public var f_data_time3 : String
-    public var f_infom_data : String
+    public var f_inform_data : String
     public var imageUrl1: String
     public var imageUrl2: String
     public var imageUrl3: String

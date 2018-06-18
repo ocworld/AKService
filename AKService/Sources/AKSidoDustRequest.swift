@@ -48,7 +48,7 @@ public func requestDustSido(sidoName: String,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponse) -> Void) {
+                            completionHandler: @escaping (AKSidoDustResponse?) -> Void) {
     //short 이름이 없으면 그 자체가 short일수도 있으니 그대로 pass
     guard let url = requestDustUrl(sidoName: shortSidoName(longSidoName: sidoName) ?? sidoName,
                                    pageNo: pageNo,
@@ -59,7 +59,13 @@ public func requestDustSido(sidoName: String,
     
     Alamofire.request(url).responseJSON {
         
-        guard let response = try? JSONDecoder().decode(AKSidoDustResponse.self, from: $0.data!) else {
+        guard let data = $0.data else {
+            completionHandler(nil)
+            return
+        }
+        
+        guard let response = try? JSONDecoder().decode(AKSidoDustResponse.self, from: data) else {
+            completionHandler(nil)
             return
         }
         
@@ -81,7 +87,7 @@ public func requestDustSido(location: CLLocation,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponse) -> Void) {
+                            completionHandler: @escaping (AKSidoDustResponse?) -> Void) {
 
     requestGeoLocationKo(location: location) {
         
@@ -128,7 +134,13 @@ public func requestDustCity(location: CLLocation,
                         pageNo: pageNo,
                         numOfRows: numOfRows,
                         serviceKey: serviceKey) {
-                            let filteredList = $0.list.filter({$0.cityName == cityName})
+                            
+                            guard let response = $0 else {
+                                completionHandler(nil)
+                                return
+                            }
+                            
+                            let filteredList = response.list.filter({$0.cityName == cityName})
                             if filteredList.isEmpty {
                                 completionHandler(nil)
                             } else {
@@ -152,7 +164,7 @@ public func requestDustSido(placemark: CLPlacemark,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponse) -> Void) {
+                            completionHandler: @escaping (AKSidoDustResponse?) -> Void) {
     
     guard let location = placemark.location else {
         return

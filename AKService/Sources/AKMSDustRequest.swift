@@ -11,7 +11,7 @@ import Alamofire
 import CoreLocation
 
 /// stationName과 msDustResponse를 매핑한 값
-public typealias AKMSDustResult = (stationName: String, msDustResponse : AKMSDustResponse)
+public typealias AKMSDustResult = (stationName: String, msDustResponse : AKMSDustResponse?)
 
 /// 미세먼지 데이터를 요청할 수 있는 url을 반환한다.
 ///
@@ -64,7 +64,13 @@ public func requestDust(stationName: String,
     
     Alamofire.request(url).responseJSON {
         
-        guard let response = try? JSONDecoder().decode(AKMSDustResponse.self, from: $0.data!) else {
+        guard let data = $0.data else {
+            completionHandler((stationName: stationName, msDustResponse: nil))
+            return
+        }
+        
+        guard let response = try? JSONDecoder().decode(AKMSDustResponse.self, from: data) else {
+            completionHandler((stationName: stationName, msDustResponse: nil))
             return
         }
         
@@ -147,14 +153,18 @@ public func requestDustItems(msResponse: AKMSResponse,
                              pageNo: Int,
                              numOfRows: Int,
                              serviceKey: String,
-                             completionHandler: @escaping (AKMSDustResultItems) -> Void) {
+                             completionHandler: @escaping (AKMSDustResultItems?) -> Void) {
     
     requestDust(msResponse: msResponse, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
         resultItemArray in
         
         var resultItems = AKMSDustResultItems()
         for resultItem in resultItemArray {
-            let msDustResponse = resultItem.msDustResponse
+            
+            guard let msDustResponse = resultItem.msDustResponse else {
+                continue
+            }
+            
             //최신 시간을 최신으로 오도록 보장하기 위해. 리스트가 아주 크진 않을 것이므로 정렬
             //한국시간표기에 맞게 나오므로 그냥 단순 string 비교로 대체
             let sortedDustItems = msDustResponse.list.sorted {$0.dataTime > $1.dataTime}
@@ -217,13 +227,19 @@ public func requestDust(location: CLLocation,
                         msPageNo: Int,
                         msNumOfRows: Int,
                         serviceKey: String,
-                        completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
+                        completionHandler: @escaping (Array<AKMSDustResult>?) -> Void) {
     
     requestMS(location: location,
               pageNo: msPageNo,
               numOfRows: msNumOfRows,
               serviceKey: serviceKey) {
-                requestDust(msResponse: $0,
+                
+                guard let msResponse = $0 else {
+                    completionHandler(nil)
+                    return
+                }
+                
+                requestDust(msResponse: msResponse,
                             pageNo: pageNo,
                             numOfRows: numOfRows,
                             serviceKey: serviceKey,
@@ -249,13 +265,19 @@ public func requestDustItems(location: CLLocation,
                              msPageNo: Int,
                              msNumOfRows: Int,
                              serviceKey: String,
-                             completionHandler: @escaping (AKMSDustResultItems) -> Void) {
+                             completionHandler: @escaping (AKMSDustResultItems?) -> Void) {
     
     requestMS(location: location,
               pageNo: msPageNo,
               numOfRows: msNumOfRows,
               serviceKey: serviceKey) {
-                requestDustItems(msResponse: $0,
+                
+                guard let msResponse = $0 else {
+                    completionHandler(nil)
+                    return
+                }
+                            
+                requestDustItems(msResponse: msResponse,
                                  pageNo: pageNo,
                                  numOfRows: numOfRows,
                                  serviceKey: serviceKey,
@@ -281,13 +303,19 @@ public func requestDust(placemark: CLPlacemark,
                         msPageNo: Int,
                         msNumOfRows: Int,
                         serviceKey: String,
-                        completionHandler: @escaping (Array<AKMSDustResult>) -> Void) {
+                        completionHandler: @escaping (Array<AKMSDustResult>?) -> Void) {
     
     requestMS(placemark: placemark,
               pageNo: msPageNo,
               numOfRows: msNumOfRows,
               serviceKey: serviceKey) {
-                requestDust(msResponse: $0,
+                
+                guard let msResponse = $0 else {
+                    completionHandler(nil)
+                    return
+                }
+                
+                requestDust(msResponse: msResponse,
                             pageNo: pageNo,
                             numOfRows: numOfRows,
                             serviceKey: serviceKey,
@@ -313,13 +341,19 @@ public func requestDustItems(placemark: CLPlacemark,
                              msPageNo: Int,
                              msNumOfRows: Int,
                              serviceKey: String,
-                             completionHandler: @escaping (AKMSDustResultItems) -> Void) {
+                             completionHandler: @escaping (AKMSDustResultItems?) -> Void) {
     
     requestMS(placemark: placemark,
               pageNo: msPageNo,
               numOfRows: msNumOfRows,
               serviceKey: serviceKey) {
-                requestDustItems(msResponse: $0,
+                
+                guard let msResponse = $0 else {
+                    completionHandler(nil)
+                    return
+                }
+                
+                requestDustItems(msResponse: msResponse,
                                  pageNo: pageNo,
                                  numOfRows: numOfRows,
                                  serviceKey: serviceKey,
