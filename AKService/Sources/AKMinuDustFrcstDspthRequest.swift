@@ -42,7 +42,7 @@ fileprivate func requestDustFrcstUrl(date: Date, informCode: AKMinuDustFrcstDspt
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
 public func requestDustFrcst(date: Date, informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String, completionHandler: @escaping (AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?) -> Void) {
     
-    guard let url = requestDustFrcstUrl(date: Date(), informCode: informCode, serviceKey: serviceKey) else {
+    guard let url = requestDustFrcstUrl(date: date, informCode: informCode, serviceKey: serviceKey) else {
                                     return
     }
     
@@ -77,9 +77,9 @@ public func requestDustFrcst(date: Date, serviceKey: String,
         
         var dictionary: [AKMinuDustFrcstDspthInformCode : AKMinuDustFrcstDspthResponse?] = [:]
         
-        return {
-            let informCode = $0
-            dictionary[informCode] = $1
+        return { (informCode, response) in
+            
+            dictionary.updateValue(response, forKey: informCode)
             
             if dictionary.keys.contains(.PM25) && dictionary.keys.contains(.PM10) {
                 completionHandler(dictionary)
