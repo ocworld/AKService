@@ -45,6 +45,7 @@ public struct AKMinuDustFrcstDspthResponseItem : Codable {
     
 }
 
+/// 이미지 url에 대한 기능
 extension AKMinuDustFrcstDspthResponseItem {
     
     /// 응답에 포한된 image url을 반환한다. 형식상 유효한 URL만 반환한다.
@@ -75,6 +76,31 @@ extension AKMinuDustFrcstDspthResponseItem {
         let handler = eachCompletionHandler(totalCount: imageURLCaches.count)
         
         imageURLCaches.forEach { Alamofire.request($0).responseImage{ handler($0) } }
+    }
+    
+}
+
+/// informGrade에 대한 기능
+extension AKMinuDustFrcstDspthResponseItem {
+    
+    public var informGradeDictionary : [String : String] {
+        
+        return informGrade.components(separatedBy: ",")
+            .map({$0.components(separatedBy: ":")})
+            .reduce(Dictionary<String, String>()) { (result, stringArray) in
+                guard stringArray.count >= 2 else {
+                    return result
+                }
+                
+                let key = stringArray[0].trimmingCharacters(in: .whitespaces)
+                let value = stringArray[1].trimmingCharacters(in: .whitespaces)
+                
+                var newResult = result
+                newResult[key] = value
+                
+                return newResult
+            }
+        
     }
     
 }
