@@ -6,7 +6,10 @@
 //
 
 import Foundation
+import Alamofire
+import AlamofireImage
 
+/// 미세먼지 예보 정보 요청에 대한 응답의 항목이다.
 public struct AKMinuDustFrcstDspthResponseItem : Codable {
     
     public var _returnType : String
@@ -39,5 +42,39 @@ public struct AKMinuDustFrcstDspthResponseItem : Codable {
     public var serviceKey: String
     public var totalCount: String
     public var ver: String
+    
+}
+
+extension AKMinuDustFrcstDspthResponseItem {
+    
+    /// 응답에 포한된 image url을 반환한다. 형식상 유효한 URL만 반환한다.
+    public var imageURLs : [URL] {
+        return [imageUrl1, imageUrl2, imageUrl3, imageUrl4, imageUrl5, imageUrl6, imageUrl7, imageUrl8, imageUrl9].compactMap{ URL(string: $0) }
+    }
+    
+    
+    /// 응답에 포함된 image url의 이미지를 다운로드 받는다.
+    ///
+    /// - Parameter completionHandler: 다운로드 받은 UIImage를 반환한다. main queue에서 동작하지 않고 별도 queue에서 동작한다.
+    public func requestImages(completionHandler: @escaping ([UIImage]) -> Void) {
+        
+        func eachCompletionHandler(totalCount: Int) -> ((DataResponse<Image>) -> Void) {
+            
+            var responses : [DataResponse<Image>] = []
+            
+            return {
+                responses.append($0)
+                if responses.count >= totalCount {
+                    completionHandler(responses.compactMap { $0.result.value })
+                }
+            }
+            
+        }
+        
+        let imageURLCaches = imageURLs
+        let handler = eachCompletionHandler(totalCount: imageURLCaches.count)
+        
+        imageURLCaches.forEach { Alamofire.request($0).responseImage{ handler($0) } }
+    }
     
 }

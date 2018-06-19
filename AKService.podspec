@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'AKService'
-  s.version          = '0.3.3'
+  s.version          = '0.3.4'
   s.summary          = 'AirKorea 미세먼지 요청 라이브러리'
 
 # This description is used to generate tags and improve search results.
@@ -45,5 +45,6 @@ Pod::Spec.new do |s|
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
   s.dependency 'Alamofire', '~> 4.7'
+  s.dependency 'AlamofireImage', '~> 3.3'
   
 end
