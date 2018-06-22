@@ -48,7 +48,7 @@ public func requestDustSido(sidoName: String,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponse?) -> Void) {
+                            completionHandler: @escaping (String, AKSidoDustResponse?, Alamofire.DataResponse<Any>) -> Void) {
     //short 이름이 없으면 그 자체가 short일수도 있으니 그대로 pass
     guard let url = requestDustUrl(sidoName: shortSidoName(longSidoName: sidoName) ?? sidoName,
                                    pageNo: pageNo,
@@ -60,16 +60,16 @@ public func requestDustSido(sidoName: String,
     Alamofire.request(url).responseJSON {
         
         guard let data = $0.data else {
-            completionHandler(nil)
+            completionHandler(sidoName, nil, $0)
             return
         }
         
         guard let response = try? JSONDecoder().decode(AKSidoDustResponse.self, from: data) else {
-            completionHandler(nil)
+            completionHandler(sidoName, nil, $0)
             return
         }
         
-        completionHandler(response)
+        completionHandler(sidoName, response, $0)
         
     }
 }
@@ -87,19 +87,19 @@ public func requestDustSido(location: CLLocation,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponse?) -> Void) {
+                            completionHandler: @escaping (CLLocation, AKSidoDustResponse?, Alamofire.DataResponse<Any>?) -> Void) {
 
     requestGeoLocationKo(location: location) {
         
         guard let sidoName = $0.administrativeArea else {
+            completionHandler(location, nil, nil)
             return
         }
         
-        requestDustSido(sidoName: sidoName,
-                        pageNo: pageNo,
-                        numOfRows: numOfRows,
-                        serviceKey: serviceKey,
-                        completionHandler: completionHandler)
+        requestDustSido(sidoName: sidoName, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
+            completionHandler(location, $1, $2)
+        }
+        
     }
     
 }
@@ -117,35 +117,34 @@ public func requestDustCity(location: CLLocation,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponseItem?) -> Void) {
+                            completionHandler: @escaping (CLLocation, AKSidoDustResponseItem?, Alamofire.DataResponse<Any>?) -> Void) {
     
     requestGeoLocationKo(location: location) { (placemark) in
         
         guard let sidoName = placemark.administrativeArea else {
+            completionHandler(location, nil, nil)
             return
         }
         
         //전국에 예상치 못하게 locality에 값이 없을 수 있는 상황이 있을 수 있으니(가능한 있겠지만), locality가 없을 경우 sublocality까지 본다.
         guard let cityName = placemark.locality ?? placemark.subLocality else {
+            completionHandler(location, nil, nil)
             return
         }
         
-        requestDustSido(sidoName: sidoName,
-                        pageNo: pageNo,
-                        numOfRows: numOfRows,
-                        serviceKey: serviceKey) {
+        requestDustSido(sidoName: sidoName, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
+            
+            guard let response = $1 else {
+                completionHandler(location, nil, $2)
+                return
+            }
                             
-                            guard let response = $0 else {
-                                completionHandler(nil)
-                                return
-                            }
-                            
-                            let filteredList = response.list.filter({$0.cityName == cityName})
-                            if filteredList.isEmpty {
-                                completionHandler(nil)
-                            } else {
-                                completionHandler(filteredList[0])
-                            }
+            let filteredList = response.list.filter({$0.cityName == cityName})
+            if filteredList.isEmpty {
+                completionHandler(location, nil, $2)
+            } else {
+                completionHandler(location, filteredList[0], $2)
+            }
                             
         }
     }
@@ -164,17 +163,16 @@ public func requestDustSido(placemark: CLPlacemark,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponse?) -> Void) {
+                            completionHandler: @escaping (CLPlacemark, AKSidoDustResponse?, Alamofire.DataResponse<Any>?) -> Void) {
     
     guard let location = placemark.location else {
+        completionHandler(placemark, nil, nil)
         return
     }
     
-    requestDustSido(location: location,
-                    pageNo: pageNo,
-                    numOfRows: numOfRows,
-                    serviceKey: serviceKey,
-                    completionHandler: completionHandler)
+    requestDustSido(location: location, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
+        completionHandler(placemark, $1, $2)
+    }
     
 }
 
@@ -190,16 +188,14 @@ public func requestDustCity(placemark: CLPlacemark,
                             pageNo: Int,
                             numOfRows: Int,
                             serviceKey: String,
-                            completionHandler: @escaping (AKSidoDustResponseItem?) -> Void) {
+                            completionHandler: @escaping (CLPlacemark, AKSidoDustResponseItem?, Alamofire.DataResponse<Any>?) -> Void) {
     
     guard let location = placemark.location else {
         return
     }
     
-    requestDustCity(location: location,
-                    pageNo: pageNo,
-                    numOfRows: numOfRows,
-                    serviceKey: serviceKey,
-                    completionHandler: completionHandler)
+    requestDustCity(location: location, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
+        completionHandler(placemark, $1, $2)
+    }
     
 }
