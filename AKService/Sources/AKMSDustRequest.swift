@@ -117,7 +117,7 @@ public func requestDust(msResponseItem : AKMSResponseItem,
                                          msPageNo: nil,
                                          msNumOfRows: nil,
                                          msResult: nil,
-                                         msResponseItem: $0.msResponseItem))
+                                         msResponseItem: msResponseItem))
     }
     
 }
