@@ -57,7 +57,7 @@ fileprivate func tmResponseHandler(data: Data, placemark: CLPlacemark, completio
 ///   - location: 사용자의 위치정보이다
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestTM(location: CLLocation, serviceKey: String, completionHandler: @escaping (CLLocation, AKTMResponse?, Alamofire.DataResponse<Any>) -> Void)  {
+public func requestTM(location: CLLocation, serviceKey: String, completionHandler: @escaping (AKTMResult<CLLocation>) -> Void)  {
     
     //location을 한국어로 변환
     requestGeoLocationKo(location: location) { (placemark) in
@@ -68,12 +68,12 @@ public func requestTM(location: CLLocation, serviceKey: String, completionHandle
         
         Alamofire.request(url).responseJSON { (dataResponse) in
             guard let data = dataResponse.data else {
-                completionHandler(location, nil, dataResponse)
+                completionHandler(AKTMResult(input: location, serviceKey: serviceKey, requestUrl: url, dataResponseRaw: dataResponse))
                 return
             }
             
             tmResponseHandler(data: data, placemark: placemark) { (tmResponse) in
-                completionHandler(location, tmResponse, dataResponse)
+                completionHandler(AKTMResult(input: location, serviceKey: serviceKey, requestUrl: url, dataResponseRaw: dataResponse, response: tmResponse))
             }
         }
         
@@ -87,15 +87,15 @@ public func requestTM(location: CLLocation, serviceKey: String, completionHandle
 ///   - placemark: 사용자의 장소정보이다. 내부적으로 locale을 ko-kr로만 지정하기 위해 location 값만 사용한다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestTM(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (CLPlacemark, AKTMResponse?, Alamofire.DataResponse<Any>?) -> Void)  {
+public func requestTM(placemark: CLPlacemark, serviceKey: String, completionHandler: @escaping (AKTMResult<CLPlacemark>) -> Void)  {
     
     guard let location = placemark.location else {
-        completionHandler(placemark, nil, nil)
+        completionHandler(AKTMResult(input: placemark, serviceKey: serviceKey))
         return
     }
     
     requestTM(location: location, serviceKey: serviceKey) {
-        completionHandler(placemark, $1, $2)
+        completionHandler(AKTMResult(input: placemark, serviceKey: $0.serviceKey, requestUrl: $0.requestUrl, dataResponseRaw: $0.dataResponseRaw, response: $0.response))
     }
     
 }

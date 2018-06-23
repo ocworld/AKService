@@ -53,7 +53,7 @@ public func requestMS(tmXString: String,
                       pageNo: Int,
                       numOfRows: Int,
                       serviceKey: String,
-                      completionHandler: @escaping (String, String, AKMSResponse?, Alamofire.DataResponse<Any>) -> Void) {
+                      completionHandler: @escaping (AKMSResult<(tmXString: String, tmYString: String)>) -> Void) {
     
     guard let url = requestMSUrl(tmXString: tmXString,
                                  tmYString: tmYString,
@@ -66,16 +66,34 @@ public func requestMS(tmXString: String,
     Alamofire.request(url).responseJSON {
         
         guard let data = $0.data else {
-            completionHandler(tmXString, tmYString, nil, $0)
+            completionHandler(AKMSResult(input: (tmXString: tmXString, tmYString: tmYString),
+                                         serviceKey: serviceKey,
+                                         pageNo: pageNo,
+                                         numOfRows: numOfRows,
+                                         requestUrl: url,
+                                         dataResponseRaw: $0,
+                                         response: nil))
             return
         }
         
-        guard let msItems = try? JSONDecoder().decode(AKMSResponse.self, from: data) else {
-            completionHandler(tmXString, tmYString, nil, $0)
+        guard let response = try? JSONDecoder().decode(AKMSResponse.self, from: data) else {
+            completionHandler(AKMSResult(input: (tmXString: tmXString, tmYString: tmYString),
+                                         serviceKey: serviceKey,
+                                         pageNo: pageNo,
+                                         numOfRows: numOfRows,
+                                         requestUrl: url,
+                                         dataResponseRaw: $0,
+                                         response: nil))
             return
         }
         
-        completionHandler(tmXString, tmYString, msItems, $0)
+        completionHandler(AKMSResult(input: (tmXString: tmXString, tmYString: tmYString),
+                                     serviceKey: serviceKey,
+                                     pageNo: pageNo,
+                                     numOfRows: numOfRows,
+                                     requestUrl: url,
+                                     dataResponseRaw: $0,
+                                     response: response))
         
     }
     
@@ -93,9 +111,17 @@ public func requestMS(responseItem : AKTMResponseItem,
                       pageNo: Int,
                       numOfRows: Int,
                       serviceKey: String,
-                      completionHandler: @escaping (AKTMResponseItem, AKMSResponse?, Alamofire.DataResponse<Any>) -> Void) {
+                      completionHandler: @escaping (AKMSResult<AKTMResponseItem>) -> Void) {
     
-    requestMS(tmXString: responseItem.tmX, tmYString: responseItem.tmY, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) { (_, _, response, dataResponse) in completionHandler(responseItem, response, dataResponse) }
+    requestMS(tmXString: responseItem.tmX, tmYString: responseItem.tmY, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
+        completionHandler(AKMSResult(input: responseItem,
+                                     serviceKey: serviceKey,
+                                     pageNo: pageNo,
+                                     numOfRows: numOfRows,
+                                     requestUrl: $0.requestUrl,
+                                     dataResponseRaw: $0.dataResponseRaw,
+                                     response: $0.response))
+    }
     
 }
 
@@ -111,15 +137,25 @@ public func requestMS(tmResponse : AKTMResponse,
                       pageNo: Int,
                       numOfRows: Int,
                       serviceKey: String,
-                      completionHandler: @escaping (AKTMResponse, AKMSResponse?, Alamofire.DataResponse<Any>?) -> Void) {
+                      completionHandler: @escaping (AKMSResult<AKTMResponse>) -> Void) {
     
+
     guard let first = tmResponse.first else {
-        completionHandler(tmResponse, nil, nil)
+        completionHandler(AKMSResult(input: tmResponse,
+                                     serviceKey: serviceKey,
+                                     pageNo: pageNo,
+                                     numOfRows: numOfRows))
         return
     }
     
     requestMS(responseItem : first, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
-        (_, response, dateResponse) in completionHandler(tmResponse, response, dateResponse)
+        completionHandler(AKMSResult(input: tmResponse,
+                                     serviceKey: $0.serviceKey,
+                                     pageNo: pageNo,
+                                     numOfRows: numOfRows,
+                                     requestUrl: $0.requestUrl,
+                                     dataResponseRaw: $0.dataResponseRaw,
+                                     response: $0.response))
     }
     
 }
@@ -136,18 +172,28 @@ public func requestMS(location: CLLocation,
                       pageNo: Int,
                       numOfRows: Int,
                       serviceKey: String,
-                      completionHandler: @escaping (CLLocation, AKMSResponse?, Alamofire.DataResponse<Any>?) -> Void) {
+                      completionHandler: @escaping (AKMSResult<CLLocation>) -> Void) {
     
-    requestTM(location: location, serviceKey: serviceKey) { (location, tmResponse, _) in
+    requestTM(location: location, serviceKey: serviceKey) {
         
-        guard let tmResponseValue = tmResponse else {
-            completionHandler(location, nil, nil)
+        guard let tmResponseValue = $0.response else {
+            completionHandler(AKMSResult(input: location,
+                                         serviceKey: $0.serviceKey,
+                                         pageNo: pageNo,
+                                         numOfRows: numOfRows))
             return
         }
         
         requestMS(tmResponse: tmResponseValue, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
-            (_, response, dataResponse) in
-            completionHandler(location, response, dataResponse)
+            
+            completionHandler(AKMSResult(input: location,
+                                         serviceKey: serviceKey,
+                                         pageNo: pageNo,
+                                         numOfRows: numOfRows,
+                                         requestUrl: $0.requestUrl,
+                                         dataResponseRaw: $0.dataResponseRaw,
+                                         response: $0.response))
+            
         }
     }
     
@@ -165,19 +211,31 @@ public func requestMS(placemark: CLPlacemark,
                       pageNo: Int,
                       numOfRows: Int,
                       serviceKey: String,
-                      completionHandler: @escaping (CLPlacemark, AKMSResponse?, Alamofire.DataResponse<Any>?) -> Void) {
+                      completionHandler: @escaping (AKMSResult<CLPlacemark>) -> Void) {
     
-    requestTM(placemark: placemark, serviceKey: serviceKey) {
-        (placemark, tmResponse, tmDataResponse) in
+    requestTM(placemark: placemark, serviceKey: serviceKey) { (tmResult) in
         
-        guard let tmResponseValue = tmResponse else {
-            completionHandler(placemark, nil, nil)
+        guard let tmResponseValue = tmResult.response else {
+            completionHandler(AKMSResult(input: placemark,
+                                         serviceKey: serviceKey,
+                                         pageNo: pageNo,
+                                         numOfRows: numOfRows,
+                                         requestUrl: nil,
+                                         dataResponseRaw: nil,
+                                         response: nil,
+                                         tmResult: tmResult))
             return
         }
         
         requestMS(tmResponse: tmResponseValue, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
-            (_, response, DataResponse) in
-            completionHandler(placemark, response, DataResponse)
+            completionHandler(AKMSResult(input: placemark,
+                                         serviceKey: $0.serviceKey,
+                                         pageNo: pageNo,
+                                         numOfRows: numOfRows,
+                                         requestUrl: $0.requestUrl,
+                                         dataResponseRaw: $0.dataResponseRaw,
+                                         response: $0.response,
+                                         tmResult: tmResult))
         }
     }
     

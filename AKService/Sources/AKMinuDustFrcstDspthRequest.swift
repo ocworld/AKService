@@ -40,25 +40,40 @@ fileprivate func requestDustFrcstUrl(date: Date, informCode: AKMinuDustFrcstDspt
 ///   - informCode: PM10과 PM25 중 어떤 값을 예보하는지 값을 가져온다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustFrcst(date: Date, informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String, completionHandler: @escaping (Date, AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?, Alamofire.DataResponse<Any>) -> Void) {
+public func requestDustFrcst(date: Date, informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String, completionHandler: @escaping (AKMinuDustFcstResult<Date>) -> Void) {
     
     guard let url = requestDustFrcstUrl(date: date, informCode: informCode, serviceKey: serviceKey) else {
-                                    return
+        return
     }
     
     Alamofire.request(url).responseJSON {
         
         guard let data = $0.data else {
-            completionHandler(date, informCode, nil, $0)
+            completionHandler(AKMinuDustFcstResult(input: date,
+                                                   informCode: informCode,
+                                                   serviceKey: serviceKey,
+                                                   requestUrl: url,
+                                                   dataResponseRaw: $0,
+                                                   response: nil))
             return
         }
         
         guard let response = try? JSONDecoder().decode(AKMinuDustFrcstDspthResponse.self, from: data) else {
-            completionHandler(date, informCode, nil, $0)
+            completionHandler(AKMinuDustFcstResult(input: date,
+                                                   informCode: informCode,
+                                                   serviceKey: serviceKey,
+                                                   requestUrl: url,
+                                                   dataResponseRaw: $0,
+                                                   response: nil))
             return
         }
         
-        completionHandler(date, informCode, response, $0)
+        completionHandler(AKMinuDustFcstResult(input: date,
+                                               informCode: informCode,
+                                               serviceKey: serviceKey,
+                                               requestUrl: url,
+                                               dataResponseRaw: $0,
+                                               response: response))
         
     }
 }
@@ -72,18 +87,18 @@ public func requestDustFrcst(date: Date, informCode: AKMinuDustFrcstDspthInformC
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
 public func requestDustFrcst(date: Date, serviceKey: String,
-                        completionHandler: @escaping (Date, Dictionary<AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?>) -> Void) {
+                        completionHandler: @escaping (Dictionary<AKMinuDustFrcstDspthInformCode, AKMinuDustFcstResult<Date>>) -> Void) {
     
-    func eachCompletionHandler() -> ((AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?) -> Void) {
+    func eachCompletionHandler() -> (AKMinuDustFcstResult<Date>) -> Void {
         
-        var dictionary: [AKMinuDustFrcstDspthInformCode : AKMinuDustFrcstDspthResponse?] = [:]
+        var dictionary: [AKMinuDustFrcstDspthInformCode : AKMinuDustFcstResult<Date>] = [:]
         
-        return { (informCode, response) in
+        return { (result) in
             
-            dictionary.updateValue(response, forKey: informCode)
+            dictionary.updateValue(result, forKey: result.informCode)
             
             if dictionary.keys.contains(.PM25) && dictionary.keys.contains(.PM10) {
-                completionHandler(date, dictionary)
+                completionHandler(dictionary)
             }
         }
         
@@ -92,9 +107,7 @@ public func requestDustFrcst(date: Date, serviceKey: String,
     let handler = eachCompletionHandler()
     let informCodeArray : [AKMinuDustFrcstDspthInformCode] = [.PM25, .PM10]
     informCodeArray.forEach {
-        requestDustFrcst(date: date, informCode: $0, serviceKey: serviceKey) {
-            (_, informCode, response, _)  in handler(informCode, response)
-        }
+        requestDustFrcst(date: date, informCode: $0, serviceKey: serviceKey) { handler($0) }
     }
     
 }
@@ -107,13 +120,11 @@ public func requestDustFrcst(date: Date, serviceKey: String,
 ///   - informCode: PM10과 PM25 중 어떤 값을 예보하는지 값을 가져온다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
-public func requestDustFrcst(informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String, completionHandler: @escaping (Date, AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?, Alamofire.DataResponse<Any>) -> Void) {
+public func requestDustFrcst(informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String, completionHandler: @escaping (AKMinuDustFcstResult<Date>) -> Void) {
     
     requestDustFrcst(date: Date(), informCode: informCode, serviceKey: serviceKey) {
-        (date, informCode, response, _) in
-        
-        if response == nil || response!.list.isEmpty {
-            let yesterdayDate = date - 86400 //(1 * 60 * 60 * 24)
+        if $0.response == nil || $0.response!.list.isEmpty {
+            let yesterdayDate = $0.input /* date */ - 86400 //(1 * 60 * 60 * 24)
             requestDustFrcst(date: yesterdayDate, informCode: informCode, serviceKey: serviceKey, completionHandler: completionHandler)
         }
         
@@ -129,7 +140,7 @@ public func requestDustFrcst(informCode: AKMinuDustFrcstDspthInformCode, service
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
 public func requestDustFrcst(serviceKey: String,
-                             completionHandler: @escaping (Date, Dictionary<AKMinuDustFrcstDspthInformCode, AKMinuDustFrcstDspthResponse?>) -> Void) {
+                             completionHandler: @escaping (Dictionary<AKMinuDustFrcstDspthInformCode, AKMinuDustFcstResult<Date>>) -> Void) {
     
     requestDustFrcst(date: Date(), serviceKey: serviceKey, completionHandler: completionHandler)
     
