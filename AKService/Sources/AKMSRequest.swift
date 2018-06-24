@@ -42,8 +42,8 @@ fileprivate func requestMSUrl(tmXString: String,
 /// tm좌표를 기반으로 주변 측정소 정보를 요청한다.
 ///
 /// - Parameters:
-///   - tmXString: tm좌표 X의 문자열이다. AKTMRequest의 반환값을 바로 사용하기 위해 String으로 입력을 받는다.
-///   - tmYString: tm좌표 Y의 문자열이다. AKTMRequest의 반환값을 바로 사용하기 위해 String으로 입력을 받는다.
+///   - tmXString: tm좌표 X의 문자열이다.
+///   - tmYString: tm좌표 Y의 문자열이다.
 ///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
 ///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
@@ -95,6 +95,38 @@ public func requestMS(tmXString: String,
                                      dataResponseRaw: $0,
                                      response: response))
         
+    }
+    
+}
+
+/// tm좌표를 기반으로 주변 측정소 정보를 요청한다.
+///
+/// - Parameters:
+///   - tmXDouble: tm X 좌표이다.
+///   - tmYDouble: tm Y 좌표이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
+///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
+///   - completionHandler: 응답받은 정보를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
+public func requestMS(tmXDouble: Double,
+                      tmYDouble: Double,
+                      pageNo: Int,
+                      numOfRows: Int,
+                      serviceKey: String,
+                      completionHandler: @escaping (AKMSResult<(tmXDouble: Double, tmYDouble: Double)>) -> Void) {
+    
+    requestMS(tmXString: String(tmXDouble),
+              tmYString: String(tmYDouble),
+              pageNo: pageNo,
+              numOfRows: numOfRows,
+              serviceKey: serviceKey) {
+                completionHandler(AKMSResult(input: (tmXDouble: tmXDouble, tmYDouble: tmYDouble),
+                                             serviceKey: $0.serviceKey,
+                                             pageNo: $0.pageNo,
+                                             numOfRows: $0.numOfRows,
+                                             requestUrl: $0.requestUrl,
+                                             dataResponseRaw: $0.dataResponseRaw,
+                                             response: $0.response))
     }
     
 }

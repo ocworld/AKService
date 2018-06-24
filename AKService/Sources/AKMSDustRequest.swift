@@ -436,3 +436,105 @@ public func requestDustItems(placemark: CLPlacemark,
     }
     
 }
+
+/// 사용자의 위치 정보를 입력으로 미세먼지를 요청한다.
+/// 사용자의 위치 주변 측정소 정보를 얻어와서 각 측정소에 미세먼지 정보를 요청한다.
+///
+/// - Parameters:
+///   - tmXDouble: tm X 좌표이다.
+///   - tmYDouble: tm Y 좌표이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
+///   - msPageNo: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - msNumOfRows: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 msNumOfRows이다. 한 pageNo의 최대 아이템 개수이다.
+///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
+///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
+public func requestDust(tmXDouble: Double,
+                        tmYDouble: Double,
+                        pageNo: Int,
+                        numOfRows: Int,
+                        msPageNo: Int,
+                        msNumOfRows: Int,
+                        serviceKey: String,
+                        completionHandler: @escaping (Array<AKMSDustResult<(tmXDouble: Double, tmYDouble: Double)>>?) -> Void) {
+    
+    requestMS(tmXDouble: tmXDouble, tmYDouble: tmYDouble, pageNo: msPageNo, numOfRows: msNumOfRows, serviceKey: serviceKey) {
+        
+        (msResult) in
+        
+        guard let msResponseValue = msResult.response else {
+            completionHandler(nil)
+            return
+        }
+        
+        requestDust(msResponse: msResponseValue, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
+            let newArray = $0.map {
+                return AKMSDustResult<(tmXDouble: Double, tmYDouble: Double)>(input: (tmXDouble: tmXDouble, tmYDouble: tmYDouble),
+                                                  serviceKey: $0.serviceKey,
+                                                  pageNo: $0.pageNo,
+                                                  numOfRows: $0.numOfRows,
+                                                  requestUrl: $0.requestUrl,
+                                                  dataResponseRaw: $0.dataResponseRaw,
+                                                  response: $0.response,
+                                                  msPageNo: msPageNo,
+                                                  msNumOfRows: msNumOfRows,
+                                                  msResult: msResult)
+            }
+            
+            completionHandler(newArray)
+        }
+    }
+    
+}
+
+/// 사용자의 위치 정보를 입력으로 미세먼지를 요청한다.
+/// 사용자의 위치 주변 측정소 정보를 얻어와서 각 측정소에 미세먼지 정보를 요청한다.
+///
+/// - Parameters:
+///   - tmXDouble: tm X 좌표이다.
+///   - tmYDouble: tm Y 좌표이다.
+///   - pageNo: url에서 얻어올 데이터의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
+///   - msPageNo: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 pageNo이다. 한 pageNo의 최대 아이템은 numOfRows이다. pageNo가 변경되면 numOfRows * pageNo 다음 데이터들이 응답된다.
+///   - msNumOfRows: 이 함수 내부에서 측정소 정보를 요청한다. 얻어올 측정소 정보의 퀴리의 msNumOfRows이다. 한 pageNo의 최대 아이템 개수이다.
+///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
+///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
+public func requestDustItems(tmXDouble: Double,
+                             tmYDouble: Double,
+                             pageNo: Int,
+                             numOfRows: Int,
+                             msPageNo: Int,
+                             msNumOfRows: Int,
+                             serviceKey: String,
+                             completionHandler: @escaping (AKMSDustResultItems?, Array<AKMSDustResult<(tmXDouble: Double, tmYDouble: Double)>>?) -> Void) {
+    
+    requestMS(tmXDouble: tmXDouble, tmYDouble: tmYDouble, pageNo: msPageNo, numOfRows: msNumOfRows, serviceKey: serviceKey) {
+        
+        (msResult) in
+        
+        guard let msResponseValue = msResult.response else {
+            completionHandler(nil, nil)
+            return
+        }
+        
+        requestDustItems(msResponse: msResponseValue, pageNo: pageNo, numOfRows: numOfRows, serviceKey: serviceKey) {
+            
+            let newResults = $1.map {
+                return AKMSDustResult<(tmXDouble: Double, tmYDouble: Double)>(input: (tmXDouble: tmXDouble, tmYDouble: tmYDouble),
+                                      serviceKey: $0.serviceKey,
+                                      pageNo: $0.pageNo,
+                                      numOfRows: $0.numOfRows,
+                                      requestUrl: $0.requestUrl,
+                                      dataResponseRaw: $0.dataResponseRaw,
+                                      response: $0.response,
+                                      msPageNo: msPageNo,
+                                      msNumOfRows: msNumOfRows,
+                                      msResult: msResult,
+                                      msResponseItem: $0.msResponseItem)
+            }
+            
+            completionHandler($0, newResults)
+        }
+    }
+    
+}
