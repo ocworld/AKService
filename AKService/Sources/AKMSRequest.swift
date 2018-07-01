@@ -25,7 +25,7 @@ fileprivate func requestMSUrl(tmXString: String,
                               numOfRows: Int,
                               serviceKey: String) -> URL? {
     
-    guard let urlFormatString = urlFormatString(keyName: "AKMSNearMsrStnRequestUrlFormat") else {
+    guard let urlFormatString = AKInfo.default.AKMSNearMsrStnRequestUrlFormat else {
         return nil
     }
     

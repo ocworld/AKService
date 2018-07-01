@@ -22,7 +22,7 @@ fileprivate func requestDustUrl(sidoName: String,
                                 numOfRows: Int,
                                 serviceKey: String) -> URL? {
     
-    guard let urlFormatString = urlFormatString(keyName: "AKSidoDustRequestUrlFormat") else {
+    guard let urlFormatString = AKInfo.default.AKSidoDustRequestUrlFormat else {
         return nil
     }
     
@@ -50,7 +50,7 @@ public func requestDustSido(sidoName: String,
                             serviceKey: String,
                             completionHandler: @escaping (AKSidoDustResult<String>) -> Void) {
     //short 이름이 없으면 그 자체가 short일수도 있으니 그대로 pass
-    guard let url = requestDustUrl(sidoName: shortSidoName(longSidoName: sidoName) ?? sidoName,
+    guard let url = requestDustUrl(sidoName: AKInfo.default.AKSidoLongToShowDictionary[sidoName] ?? sidoName,
                                    pageNo: pageNo,
                                    numOfRows: numOfRows,
                                    serviceKey: serviceKey) else {

@@ -23,7 +23,7 @@ fileprivate func requestDustUrl(stationName: String,
                                 numOfRows: Int,
                                 serviceKey: String) -> URL? {
     
-    guard let urlFormatString = urlFormatString(keyName: "AKMSDustRequestUrlFormat") else {
+    guard let urlFormatString = AKInfo.default.AKMSDustRequestUrlFormat else {
         return nil
     }
     

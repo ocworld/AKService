@@ -41,7 +41,7 @@
 	</dict>
 	<key>AKUrls</key>
 	<dict>
-		<key>AKMinuDustFrcstDspth</key>
+		<key>AKMinuDustFrcstDspthUrlFormat</key>
 		<string>http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMinuDustFrcstDspth?searchDate=%@&amp;pageNo=1&amp;numOfRows=100&amp;InformCode=%@&amp;ServiceKey=%@&amp;ver=1.3&amp;_returnType=json</string>
 		<key>AKMSDustRequestUrlFormat</key>
 		<string>http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?stationName=%@&amp;dataTerm=month&amp;pageNo=%@&amp;numOfRows=%@&amp;ServiceKey=%@&amp;ver=1.3&amp;_returnType=json</string>

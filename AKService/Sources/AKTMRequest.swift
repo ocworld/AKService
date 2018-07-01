@@ -18,7 +18,7 @@ import CoreLocation
 /// - Returns: 성공하면 url을 반환한다. 실패하면 nil을 반환한다.
 fileprivate func requestTMUrl(umdName: String, serviceKey: String) -> URL? {
     
-    guard let urlFormatString = urlFormatString(keyName: "AKTMRequestUrlFormat") else {
+    guard let urlFormatString = AKInfo.default.AKTMRequestUrlFormat else {
         return nil
     }
     

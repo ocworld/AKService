@@ -17,7 +17,7 @@ import Alamofire
 /// - Returns: 성공하면 url을 반환한다. 실패하면 nil을 반환한다.
 fileprivate func requestDustFrcstUrl(date: Date, informCode: AKMinuDustFrcstDspthInformCode, serviceKey: String) -> URL? {
     
-    guard let urlFormatString = urlFormatString(keyName: "AKMinuDustFrcstDspth") else {
+    guard let urlFormatString = AKInfo.default.AKMinuDustFrcstDspthUrlFormat else {
         return nil
     }
     
