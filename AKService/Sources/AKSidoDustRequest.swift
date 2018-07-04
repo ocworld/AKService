@@ -99,6 +99,7 @@ public func requestDustSido(sidoName: String,
 ///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
+@available(iOS 11.0, *)
 public func requestDustSido(location: CLLocation,
                             pageNo: Int,
                             numOfRows: Int,
@@ -138,6 +139,7 @@ public func requestDustSido(location: CLLocation,
 ///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
+@available(iOS 11.0, *)
 public func requestDustCity(location: CLLocation,
                             pageNo: Int,
                             numOfRows: Int,
@@ -212,6 +214,7 @@ public func requestDustCity(location: CLLocation,
 ///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 각 측정소마다 정보를 요청해서 가져온 Array가 저장되어있다. 메인큐가 아닌 별도 큐에서 동작한다.
+@available(iOS 11.0, *)
 public func requestDustSido(placemark: CLPlacemark,
                             pageNo: Int,
                             numOfRows: Int,
@@ -246,6 +249,7 @@ public func requestDustSido(placemark: CLPlacemark,
 ///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 호출 결과를 처리하기 위한 핸들러이다. 미세먼지/초미세먼지 정보 유형별로 값을 채워서 반환해준다. 메인큐가 아닌 별도 큐에서 동작한다.
+@available(iOS 11.0, *)
 public func requestDustCity(placemark: CLPlacemark,
                             pageNo: Int,
                             numOfRows: Int,

@@ -200,6 +200,7 @@ public func requestMS(tmResponse : AKTMResponse,
 ///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 응답받은 정보를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
+@available(iOS 11.0, *)
 public func requestMS(location: CLLocation,
                       pageNo: Int,
                       numOfRows: Int,
@@ -239,6 +240,7 @@ public func requestMS(location: CLLocation,
 ///   - numOfRows: 한 pageNo의 최대 아이템 개수이다.
 ///   - serviceKey: API 호출을 위해 사용하는 service key이다. airkorea에서 발급받아야한다.
 ///   - completionHandler: 응답받은 정보를 처리하기 위한 핸들러이다. 메인큐가 아닌 별도 큐에서 동작한다.
+@available(iOS 11.0, *)
 public func requestMS(placemark: CLPlacemark,
                       pageNo: Int,
                       numOfRows: Int,
