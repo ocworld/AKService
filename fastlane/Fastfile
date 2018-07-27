@@ -17,11 +17,37 @@ default_platform(:ios)
 
 platform :ios do
   desc "Description of what the lane does"
- 
+
+  lane :bump_version do
+    version = version_bump_podspec(path: "AKService.podspec", bump_type: "patch")
+    git_commit(path: "AKService.podspec", message: "Version Bump")
+    push_to_git_remote(tags: false)
+  end
+
+  lane :release do
+    # add actions here: https://docs.fastlane.tools/actions
+    version = version_get_podspec(path: "AKService.podspec")
+    github_release = set_github_release(
+		    repository_name: "ocworld/AKService",
+		    api_token: ENV["GITHUB_TOKEN"],
+		    name: version,
+		    tag_name: version,
+		    description: "release",
+		    commitish: "master",
+		    upload_assets: []
+		    )
+  end
+
   lane :publish do
     # add actions here: https://docs.fastlane.tools/actions
     pod_lib_lint(verbose: true)
     pod_push
+  end
+
+  lane :brp do 
+    bump_version
+    release
+    publish
   end
 
 end
