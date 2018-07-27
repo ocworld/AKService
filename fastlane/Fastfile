@@ -33,7 +33,6 @@ platform :ios do
 		    name: version,
 		    tag_name: version,
 		    description: "release",
-		    commitish: "master",
 		    upload_assets: []
 		    )
   end
